@@ -1,8 +1,10 @@
+// https://cdn.pixabay.com/photo/2017/09/01/21/53/blue-2705642_1280.jpg
+
 class SimpleImage {
   constructor({data}) {
     this.data = data
+    this.wrapper = undefined
   }
-
 
   static get toolbox() {
     return {
@@ -12,21 +14,54 @@ class SimpleImage {
   }
 
   render() {
-    const wrapper = document.createElement("div")
+    this.wrapper = document.createElement("div")
+    this.wrapper.classList.add("simple-image")
+
+    if(this.data && this.data.url) {
+      this._createImage(this.data.url, this.data.caption)
+      return this.wrapper
+    }
+
     const input = document.createElement("input")
-
-    wrapper.classList.add("simple-image")
-    wrapper.appendChild(input)
-
     input.placeholder = "Paste an image URL..."
-    input.value = this.data && this.data.url ? this.data.url : ""
+    
+    input.addEventListener("paste", (event) => {
+      this._createImage(event.clipboardData.getData("text"))
+    })
 
-    return wrapper
+    this.wrapper.appendChild(input)
+
+    return this.wrapper
+  }
+
+  _createImage(url, captionText) {
+    const image = document.createElement("img")
+    const caption = document.createElement("input")
+    image.src = url
+    caption.placeholder = "Caption.."
+    caption.value = captionText || ""
+
+    this.wrapper.innerHTML = ""
+    this.wrapper.appendChild(image)
+    this.wrapper.appendChild(caption)
+
   }
 
   save(blockContent) {
+    const image = blockContent.querySelector("img")
+    const caption = blockContent.querySelector("input")
+
+
     return {
-      url: blockContent.value
+      url: image.src,
+      caption: caption.value
     }
+  }
+
+  validate(savedData) {
+    if (!savedData.url.trim()) {
+      return false
+    }
+    return true
   }
 } 
